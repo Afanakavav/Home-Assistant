@@ -95,15 +95,15 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({
   const monthDays = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
-    const calendarStart = startOfWeek(monthStart);
-    const calendarEnd = endOfWeek(monthEnd);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday = 1
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 }); // Monday = 1
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   }, [currentDate]);
 
   // Week view
   const weekDays = useMemo(() => {
-    const weekStart = startOfWeek(currentDate);
-    const weekEnd = endOfWeek(currentDate);
+    const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday = 1
+    const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 }); // Monday = 1
     return eachDayOfInterval({ start: weekStart, end: weekEnd });
   }, [currentDate]);
 
@@ -147,7 +147,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({
   };
 
   const renderMonthView = () => {
-    const weekDaysLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDaysLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     
     return (
       <Box>
