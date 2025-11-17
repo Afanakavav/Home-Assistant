@@ -23,7 +23,7 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('Received background message:', payload);
   
-  const notificationTitle = payload.notification?.title || 'Peronciolillo Home Assistant';
+  const notificationTitle = payload.notification?.title || 'Home Assistant';
   const notificationOptions = {
     body: payload.notification?.body || '',
     icon: payload.notification?.icon || '/icon-192x192.png',

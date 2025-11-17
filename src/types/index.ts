@@ -1,4 +1,4 @@
-// Core types for Peronciolillo Home Assistant
+// Core types for Home Assistant
 
 export type ExpenseCategory = 'groceries' | 'bills' | 'transport' | 'home' | 'extra';
 

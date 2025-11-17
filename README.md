@@ -1,4 +1,4 @@
-# Peronciolillo Home Assistant
+# Home Assistant
 
 Shared home management platform for couples.
 

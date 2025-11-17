@@ -69,7 +69,7 @@ const Login: React.FC = () => {
       >
         <Paper sx={{ p: 4, width: '100%' }}>
           <Typography variant="h4" gutterBottom align="center">
-            Peronciolillo Home Assistant
+            Home Assistant
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
             Shared home management for couples
