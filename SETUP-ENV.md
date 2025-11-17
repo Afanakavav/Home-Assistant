@@ -4,20 +4,24 @@ Create a `.env` file in the project root with the following content:
 
 ```env
 # Firebase Configuration
-VITE_FIREBASE_API_KEY=AIzaSyB5VI0cWCHsLEju4UfxvSolbMgUEQ0CEso
-VITE_FIREBASE_AUTH_DOMAIN=peronciolillo-home-assistant.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=peronciolillo-home-assistant
-VITE_FIREBASE_STORAGE_BUCKET=peronciolillo-home-assistant.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=505439281340
-VITE_FIREBASE_APP_ID=1:505439281340:web:e39a71d8fa10fc9a1530b9
+# IMPORTANT: Replace these placeholders with your actual Firebase credentials
+# Get these values from Firebase Console > Project Settings > General > Your apps
+VITE_FIREBASE_API_KEY=your-firebase-api-key-here
+VITE_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project-id.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
 
 # Firebase Cloud Messaging (FCM) VAPID Key
 # Get this from Firebase Console > Project Settings > Cloud Messaging > Web Push certificates
 # Click "Generate key pair" if you don't have one yet
 VITE_FIREBASE_VAPID_KEY=your_vapid_key_here
 
-# Google Cloud Speech-to-Text API Key
-VITE_GOOGLE_SPEECH_API_KEY=AIzaSyAhQaKnqzFyaQ8cpd2AyqZ7cXKZnHLCDP8
+# Google Cloud Speech-to-Text API Key (Optional)
+# Get your API key from: https://console.cloud.google.com/apis/credentials
+# IMPORTANT: Restrict this API key to your domain in Google Cloud Console
+VITE_GOOGLE_SPEECH_API_KEY=your-google-speech-api-key-here
 ```
 
 ## How to Get Firebase VAPID Key

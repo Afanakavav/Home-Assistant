@@ -38,3 +38,7 @@ ui-debug.log
 # Sensitive configuration files
 .firebaserc
 
+# Generated service worker (contains injected env vars during build)
+# Note: The template file (firebase-messaging-sw.template.js) should be committed
+# but the generated file should not contain real keys in the repository
+

@@ -139,6 +139,27 @@ The application requires the following environment variables (see `.env.example`
 - `VITE_FIREBASE_APP_ID` - Firebase App ID
 - `VITE_GOOGLE_SPEECH_API_KEY` - (Optional) Google Speech-to-Text API Key
 
+### ⚠️ API Key Security
+
+**CRITICAL:** Since this is a frontend application, API keys are exposed in the client-side code. You **MUST** restrict your API keys in Google Cloud Console to prevent unauthorized usage:
+
+1. **For Google Speech-to-Text API Key:**
+   - Go to [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials)
+   - Select your API key
+   - Under "API restrictions", restrict to "Cloud Speech-to-Text API" only
+   - Under "Application restrictions", add your domain(s):
+     - HTTP referrers: `https://yourdomain.com/*`
+     - Or specific paths: `https://yourdomain.com/peronciolillo-home-assistant/*`
+   - Save changes
+
+2. **For Firebase API Key:**
+   - Firebase API keys are designed to be public, but you should:
+     - Configure Firebase Security Rules properly (see Firestore Security Rules section)
+     - Enable App Check in Firebase Console for additional protection
+     - Monitor usage in Firebase Console
+
+**Why this matters:** Without restrictions, anyone can use your API keys, leading to unexpected charges and security risks.
+
 ### Firestore Security Rules
 Firestore and Storage security rules are configured to:
 - Allow users to read/write their own data
