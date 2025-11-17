@@ -1,4 +1,4 @@
-# Deploy script for Peronciolillo Home Assistant
+# Deploy script for Home Assistant
 # This script builds the project and deploys it to apheron.io/home-assistant
 
 Write-Host "🚀 Starting deployment process..." -ForegroundColor Green
@@ -35,7 +35,7 @@ firebase deploy --only hosting
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Deploy failed!" -ForegroundColor Red
-    Set-Location ..\peronciolillo-home-assistant
+    Set-Location ..\home-assistant
     exit 1
 }
 

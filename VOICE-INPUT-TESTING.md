@@ -11,7 +11,7 @@
 ### 1. Avvia l'applicazione
 
 ```bash
-cd peronciolillo-home-assistant
+cd home-assistant
 npm run dev
 ```
 

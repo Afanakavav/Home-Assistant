@@ -1,4 +1,4 @@
-# 🚀 Deployment Guide - Peronciolillo Home Assistant
+# 🚀 Deployment Guide - Home Assistant
 
 ## Deploy su apheron.io/home-assistant
 
