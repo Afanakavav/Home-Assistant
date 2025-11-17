@@ -4,7 +4,7 @@ import { swEnvPlugin } from './vite-plugin-sw-env.js'
 
 export default defineConfig({
   plugins: [react(), swEnvPlugin()],
-  base: '/peronciolillo-home-assistant/',
+  base: '/home-assistant/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

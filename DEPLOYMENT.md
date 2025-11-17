@@ -1,12 +1,12 @@
 # 🚀 Deployment Guide - Peronciolillo Home Assistant
 
-## Deploy su apheron.io/peronciolillo-home-assistant
+## Deploy su apheron.io/home-assistant
 
 Il progetto è deployato come sottocartella del progetto Firebase `apheron-homepage` che gestisce `apheron.io`.
 
 ## ✅ Deploy Completato!
 
-Il sito è live su: **https://apheron.io/peronciolillo-home-assistant/**
+Il sito è live su: **https://apheron.io/home-assistant/**
 
 ## Processo di Deploy
 
@@ -20,7 +20,7 @@ Usa lo script PowerShell:
 
 Lo script:
 1. Builda il progetto (`npm run build`)
-2. Copia i file in `apheron-homepage/public/peronciolillo-home-assistant/`
+2. Copia i file in `apheron-homepage/public/home-assistant/`
 3. Deploya su Firebase Hosting
 
 ### Metodo Manuale
@@ -33,7 +33,7 @@ npm run build
 2. **Copia i file:**
 ```powershell
 # Windows PowerShell
-xcopy /E /I /Y dist ..\apheron-homepage\public\peronciolillo-home-assistant
+xcopy /E /I /Y dist ..\apheron-homepage\public\home-assistant
 ```
 
 3. **Deploy da apheron-homepage:**
@@ -46,8 +46,8 @@ firebase deploy --only hosting
 
 ### Base Path
 
-Il progetto è configurato con base path `/peronciolillo-home-assistant/` in:
-- `vite.config.ts`: `base: '/peronciolillo-home-assistant/'`
+Il progetto è configurato con base path `/home-assistant/` in:
+- `vite.config.ts`: `base: '/home-assistant/'`
 
 ### Firebase Rewrite Rules
 
@@ -55,18 +55,18 @@ Le rewrite rules sono configurate in `apheron-homepage/firebase.json`:
 
 ```json
 {
-  "source": "/peronciolillo-home-assistant",
-  "destination": "/peronciolillo-home-assistant/index.html"
+  "source": "/home-assistant",
+  "destination": "/home-assistant/index.html"
 },
 {
-  "source": "/peronciolillo-home-assistant/**",
-  "destination": "/peronciolillo-home-assistant/index.html"
+  "source": "/home-assistant/**",
+  "destination": "/home-assistant/index.html"
 }
 ```
 
 ## Verifica Deployment
 
-1. Vai su **https://apheron.io/peronciolillo-home-assistant/**
+1. Vai su **https://apheron.io/home-assistant/**
 2. Verifica che l'app carichi correttamente
 3. Testa login/registrazione
 4. Testa le funzionalità principali
@@ -78,8 +78,8 @@ Le rewrite rules sono configurate in `apheron-homepage/firebase.json`:
 **Causa**: Rewrite rules non configurate correttamente
 
 **Soluzione**:
-1. Verifica che `apheron-homepage/firebase.json` contenga le rewrite rules per `/peronciolillo-home-assistant`
-2. Verifica che i file siano in `apheron-homepage/public/peronciolillo-home-assistant/`
+1. Verifica che `apheron-homepage/firebase.json` contenga le rewrite rules per `/home-assistant`
+2. Verifica che i file siano in `apheron-homepage/public/home-assistant/`
 3. Redeploy: `cd ..\apheron-homepage && firebase deploy --only hosting`
 
 ### ❌ Assets non caricati (CSS/JS mancanti)
@@ -87,7 +87,7 @@ Le rewrite rules sono configurate in `apheron-homepage/firebase.json`:
 **Causa**: Path degli assets non corretto
 
 **Soluzione**:
-1. Verifica che `vite.config.ts` abbia `base: '/peronciolillo-home-assistant/'`
+1. Verifica che `vite.config.ts` abbia `base: '/home-assistant/'`
 2. Rebuild: `npm run build`
 3. Ricopia i file e redeploy
 
@@ -109,7 +109,7 @@ Per aggiornare il sito dopo modifiche:
 
 # Oppure manuale
 npm run build
-xcopy /E /I /Y dist ..\apheron-homepage\public\peronciolillo-home-assistant
+xcopy /E /I /Y dist ..\apheron-homepage\public\home-assistant
 cd ..\apheron-homepage
 firebase deploy --only hosting
 ```
@@ -117,6 +117,6 @@ firebase deploy --only hosting
 ## Note
 
 - Il progetto è configurato per funzionare sia in sviluppo (`npm run dev`) che in produzione
-- In sviluppo, usa `http://localhost:5173/peronciolillo-home-assistant/`
-- In produzione, usa `https://apheron.io/peronciolillo-home-assistant/`
+- In sviluppo, usa `http://localhost:5173/home-assistant/`
+- In produzione, usa `https://apheron.io/home-assistant/`
 - I file sono deployati come parte del progetto `apheron-homepage`, non come progetto separato

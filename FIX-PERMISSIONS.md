@@ -29,7 +29,7 @@ firebase deploy --only firestore:rules,firestore:indexes
 
 ## Verifica
 
-1. **Ricarica la pagina**: https://apheron.io/peronciolillo-home-assistant/
+1. **Ricarica la pagina**: https://apheron.io/home-assistant/
 2. **Vai al Dashboard**: Dovresti vedere la Shopping List senza errori
 3. **Aggiungi un item**: Dovrebbe funzionare senza errori di permessi
 4. **Aggiungi una spesa**: Dovrebbe funzionare senza errori di indice

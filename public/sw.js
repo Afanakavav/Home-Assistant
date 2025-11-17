@@ -1,9 +1,9 @@
 // Service Worker for PWA offline support
-const CACHE_NAME = 'peronciolillo-home-assistant-v1';
+const CACHE_NAME = 'home-assistant-v1';
 const urlsToCache = [
-  '/peronciolillo-home-assistant/',
-  '/peronciolillo-home-assistant/index.html',
-  '/peronciolillo-home-assistant/manifest.json',
+  '/home-assistant/',
+  '/home-assistant/index.html',
+  '/home-assistant/manifest.json',
 ];
 
 // Install event - cache resources

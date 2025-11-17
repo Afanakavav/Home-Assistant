@@ -28,7 +28,7 @@ Dovresti vedere nella lista:
 
 ### Step 3: Testa di nuovo
 
-1. Vai su https://apheron.io/peronciolillo-home-assistant/
+1. Vai su https://apheron.io/home-assistant/
 2. Clicca "Continue with Google"
 3. Dovrebbe funzionare! 🎉
 

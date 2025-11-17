@@ -8,7 +8,7 @@ import { logger } from './utils/logger'
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/peronciolillo-home-assistant/sw.js')
+      .register('/home-assistant/sw.js')
       .then((registration) => {
         logger.log('Service Worker registered:', registration);
       })
@@ -19,7 +19,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Ensure we're on the correct base path
-const basePath = '/peronciolillo-home-assistant';
+const basePath = '/home-assistant';
 const currentPath = window.location.pathname;
 
 // Redirect to base path if accessed from root or wrong path

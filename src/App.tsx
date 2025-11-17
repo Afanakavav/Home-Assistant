@@ -170,7 +170,7 @@ const theme = createTheme({
 // Component to ensure correct URL path
 const PathGuard = () => {
   const location = useLocation();
-  const basePath = '/peronciolillo-home-assistant';
+  const basePath = '/home-assistant';
 
   useEffect(() => {
     const currentPath = window.location.pathname;
@@ -186,7 +186,7 @@ const PathGuard = () => {
 };
 
 function App() {
-  const basePath = '/peronciolillo-home-assistant';
+  const basePath = '/home-assistant';
 
   return (
     <ErrorBoundary>

@@ -1,5 +1,5 @@
 # Deploy script for Peronciolillo Home Assistant
-# This script builds the project and deploys it to apheron.io/peronciolillo-home-assistant
+# This script builds the project and deploys it to apheron.io/home-assistant
 
 Write-Host "🚀 Starting deployment process..." -ForegroundColor Green
 
@@ -17,7 +17,7 @@ Write-Host "✅ Build completed!" -ForegroundColor Green
 # Step 2: Copy files to apheron-homepage
 Write-Host "📋 Copying files to apheron-homepage..." -ForegroundColor Yellow
 $sourceDir = "dist"
-$targetDir = "..\apheron-homepage\public\peronciolillo-home-assistant"
+$targetDir = "..\apheron-homepage\public\home-assistant"
 
 if (Test-Path $targetDir) {
     Remove-Item -Path $targetDir -Recurse -Force
@@ -42,5 +42,5 @@ if ($LASTEXITCODE -ne 0) {
 Set-Location ..\peronciolillo-home-assistant
 
 Write-Host "✅ Deployment complete!" -ForegroundColor Green
-Write-Host "🌍 Site available at: https://apheron.io/peronciolillo-home-assistant/" -ForegroundColor Cyan
+Write-Host "🌍 Site available at: https://apheron.io/home-assistant/" -ForegroundColor Cyan
 

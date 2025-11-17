@@ -149,7 +149,7 @@ The application requires the following environment variables (see `.env.example`
    - Under "API restrictions", restrict to "Cloud Speech-to-Text API" only
    - Under "Application restrictions", add your domain(s):
      - HTTP referrers: `https://yourdomain.com/*`
-     - Or specific paths: `https://yourdomain.com/peronciolillo-home-assistant/*`
+     - Or specific paths: `https://yourdomain.com/home-assistant/*`
    - Save changes
 
 2. **For Firebase API Key:**

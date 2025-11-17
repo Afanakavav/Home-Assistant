@@ -31,7 +31,7 @@ Google Cloud Platform ha rilevato che le tue chiavi API sono accessibili pubblic
    - Aggiungi i tuoi domini:
      ```
      https://apheron.io/*
-     https://apheron.io/peronciolillo-home-assistant/*
+     https://apheron.io/home-assistant/*
      ```
    - Se stai testando in locale, puoi aggiungere anche:
      ```
