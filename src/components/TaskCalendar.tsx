@@ -31,7 +31,7 @@ import {
   ChevronRight,
 } from '@mui/icons-material';
 import type { Task } from '../types';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, isBefore, isAfter, isEqual, getDay, getDate, getMonth, getYear } from 'date-fns';
 
 // Room colors
 const roomColors: Record<Task['room'], string> = {
@@ -81,13 +81,54 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({
     return tasks.filter(t => !t.completed);
   }, [tasks, showCompleted]);
 
-  // Get tasks for a specific date
+  // Get tasks for a specific date, considering frequency and endDate
   const getTasksForDate = (date: Date): Task[] => {
     return filteredTasks.filter(task => {
-      if (!task.startDate && !task.dueDate) return false;
-      const taskDate = task.startDate || task.dueDate;
-      if (!taskDate) return false;
-      return isSameDay(new Date(taskDate), date);
+      // For one-time tasks, check if the date matches exactly
+      if (task.frequency === 'one-time') {
+        if (!task.startDate && !task.dueDate) return false;
+        const taskDate = task.startDate || task.dueDate;
+        if (!taskDate) return false;
+        return isSameDay(new Date(taskDate), date);
+      }
+
+      // For recurring tasks, we need startDate
+      if (!task.startDate) return false;
+
+      const startDate = new Date(task.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+
+      // Check if date is before startDate
+      if (isBefore(checkDate, startDate)) return false;
+
+      // If task has endDate, check if date is before or equal to endDate
+      if (task.endDate) {
+        const endDate = new Date(task.endDate);
+        endDate.setHours(23, 59, 59, 999);
+        if (isAfter(checkDate, endDate)) return false;
+      }
+
+      // Check if date matches the frequency pattern
+      if (task.frequency === 'daily') {
+        // Every day from startDate to endDate (or forever if no endDate)
+        return true;
+      } else if (task.frequency === 'weekly') {
+        // Same day of week as startDate, and must be a multiple of 7 days from startDate
+        if (getDay(startDate) !== getDay(checkDate)) return false;
+        const daysDiff = Math.floor((checkDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        return daysDiff >= 0 && daysDiff % 7 === 0;
+      } else if (task.frequency === 'monthly') {
+        // Same day of month as startDate, and must be in a month that is a multiple of 1 month from startDate
+        if (getDate(startDate) !== getDate(checkDate)) return false;
+        // Check if checkDate is in a valid month (same day, but month/year can differ)
+        const monthsDiff = (checkDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                          (checkDate.getMonth() - startDate.getMonth());
+        return monthsDiff >= 0 && monthsDiff % 1 === 0;
+      }
+
+      return false;
     });
   };
 

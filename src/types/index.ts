@@ -80,6 +80,7 @@ export interface Task {
   completedAt?: Date;
   dueDate?: Date;
   startDate?: Date; // Date when the task should start
+  endDate?: Date; // Date when the recurring task should end (for frequency-based tasks)
   scheduledTime?: string; // Time when the task should be done (HH:mm format)
   createdAt: Date;
   createdBy: string;

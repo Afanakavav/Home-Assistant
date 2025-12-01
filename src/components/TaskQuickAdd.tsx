@@ -72,6 +72,7 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
     return `${year}-${month}-${day}`;
   };
   const [startDate, setStartDate] = useState<string>(getTodayDateString());
+  const [endDate, setEndDate] = useState<string>(''); // Optional end date for recurring tasks
   const [scheduledTime, setScheduledTime] = useState<string>(''); // Optional time (HH:mm format)
 
   const rooms: Task['room'][] = ['kitchen', 'bathroom', 'bedroom', 'living', 'other'];
@@ -145,6 +146,13 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
         dueDate = new Date(start);
       }
 
+      // Parse endDate if provided and frequency is not one-time
+      let parsedEndDate: Date | undefined;
+      if (endDate && frequency !== 'one-time') {
+        parsedEndDate = new Date(endDate);
+        parsedEndDate.setHours(23, 59, 59, 999);
+      }
+
       await createTask(currentUser.uid, {
         householdId: currentHousehold.id,
         title: title.trim(),
@@ -156,6 +164,7 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
         requiredProducts: selectedProducts.length > 0 ? selectedProducts : undefined,
         dueDate,
         startDate: start,
+        endDate: parsedEndDate,
         scheduledTime: scheduledTime || undefined,
       });
 
@@ -169,6 +178,7 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
       setSelectedTemplate(null);
       setSelectedProducts([]);
       setStartDate(getTodayDateString());
+      setEndDate('');
       setScheduledTime('');
       
       onSuccess?.();
@@ -191,6 +201,7 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
     setSelectedTemplate(null);
     setSelectedProducts([]);
     setStartDate(getTodayDateString());
+    setEndDate('');
     setScheduledTime('');
     setLoading(false);
     onClose();
@@ -322,6 +333,27 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
               ))}
             </Select>
           </FormControl>
+
+          {frequency !== 'one-time' && (
+            <TextField
+              margin="dense"
+              id="endDate"
+              label="End Date (optional)"
+              type="date"
+              fullWidth
+              variant="outlined"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              sx={{ mb: 2 }}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              helperText="When should this recurring task stop? Leave empty for no end date"
+              inputProps={{
+                min: startDate, // End date must be after start date
+              }}
+            />
+          )}
 
           <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
             <InputLabel id="time-label">Estimated Time (minutes)</InputLabel>

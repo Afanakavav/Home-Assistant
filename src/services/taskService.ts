@@ -26,6 +26,7 @@ export interface CreateTaskData {
   requiredProducts?: string[];
   dueDate?: Date;
   startDate?: Date;
+  endDate?: Date; // Date when the recurring task should end (for frequency-based tasks)
   scheduledTime?: string; // Time when the task should be done (HH:mm format)
 }
 
@@ -50,6 +51,7 @@ export const createTask = async (userId: string, taskData: CreateTaskData): Prom
     completed: false,
     dueDate: taskData.dueDate ? Timestamp.fromDate(taskData.dueDate) : undefined,
     startDate: taskData.startDate ? Timestamp.fromDate(taskData.startDate) : undefined,
+    endDate: taskData.endDate ? Timestamp.fromDate(taskData.endDate) : undefined,
   };
 
   // Remove undefined values before saving
@@ -110,6 +112,7 @@ export const getTasks = async (
       requiredProducts: data.requiredProducts || [],
       dueDate: data.dueDate?.toDate() || undefined,
       startDate: data.startDate?.toDate() || undefined,
+      endDate: data.endDate?.toDate() || undefined,
       scheduledTime: data.scheduledTime || undefined,
       createdAt: data.createdAt?.toDate() || new Date(),
       createdBy: data.createdBy,
@@ -140,29 +143,58 @@ export const getTodayTasks = async (householdId: string): Promise<Task[]> => {
   // Get all incomplete tasks
   const allTasks = await getTasks(householdId, { completed: false });
   
-  // Filter tasks that:
-  // 1. Are due today (dueDate is today)
-  // 2. Start today (startDate is today)
-  // 3. Have no due date and no start date (always shown)
+  // Filter tasks that should appear today based on frequency
   return allTasks.filter((task) => {
-    // Tasks without due date and start date are always shown
-    if (!task.dueDate && !task.startDate) return true;
-    
-    // Check if task starts today
-    if (task.startDate) {
-      const startDate = new Date(task.startDate);
-      startDate.setHours(0, 0, 0, 0);
-      if (startDate.getTime() === startOfDay.getTime()) {
-        return true; // Task starts today
+    // For one-time tasks, check if due/start date is today
+    if (task.frequency === 'one-time') {
+      if (!task.dueDate && !task.startDate) return true;
+      
+      if (task.startDate) {
+        const startDate = new Date(task.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        if (startDate.getTime() === startOfDay.getTime()) return true;
       }
+      
+      if (task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        return dueDate >= startOfDay && dueDate <= endOfDay;
+      }
+      return false;
     }
-    
-    // Check if task is due today
-    if (task.dueDate) {
-      const dueDate = new Date(task.dueDate);
-      return dueDate >= startOfDay && dueDate <= endOfDay;
+
+    // For recurring tasks, check if today matches the frequency pattern
+    if (!task.startDate) return false;
+
+    const startDate = new Date(task.startDate);
+    startDate.setHours(0, 0, 0, 0);
+    const today = new Date(startOfDay);
+
+    // Check if today is before startDate
+    if (today < startDate) return false;
+
+    // If task has endDate, check if today is before or equal to endDate
+    if (task.endDate) {
+      const endDate = new Date(task.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      if (today > endDate) return false;
     }
-    
+
+    // Check frequency pattern
+    if (task.frequency === 'daily') {
+      return true; // Every day
+    } else if (task.frequency === 'weekly') {
+      // Same day of week, and multiple of 7 days from startDate
+      if (startDate.getDay() !== today.getDay()) return false;
+      const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      return daysDiff >= 0 && daysDiff % 7 === 0;
+    } else if (task.frequency === 'monthly') {
+      // Same day of month, and multiple of 1 month from startDate
+      if (startDate.getDate() !== today.getDate()) return false;
+      const monthsDiff = (today.getFullYear() - startDate.getFullYear()) * 12 + 
+                        (today.getMonth() - startDate.getMonth());
+      return monthsDiff >= 0 && monthsDiff % 1 === 0;
+    }
+
     return false;
   });
 };
@@ -179,11 +211,60 @@ export const getWeekTasks = async (householdId: string): Promise<Task[]> => {
   // Get all incomplete tasks
   const allTasks = await getTasks(householdId, { completed: false });
   
-  // Filter tasks that are due this week or have no due date
+  // Filter tasks that should appear this week based on frequency
   return allTasks.filter((task) => {
-    if (!task.dueDate) return true;
-    const dueDate = new Date(task.dueDate);
-    return dueDate >= startOfWeek && dueDate <= endOfWeek;
+    // For one-time tasks, check if due date is this week
+    if (task.frequency === 'one-time') {
+      if (!task.dueDate && !task.startDate) return true;
+      const taskDate = task.startDate || task.dueDate;
+      if (!taskDate) return false;
+      const date = new Date(taskDate);
+      return date >= startOfWeek && date <= endOfWeek;
+    }
+
+    // For recurring tasks, check if any day this week matches the frequency pattern
+    if (!task.startDate) return false;
+
+    const startDate = new Date(task.startDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Check if task has started and hasn't ended
+    if (task.endDate) {
+      const endDate = new Date(task.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      if (endDate < startOfWeek) return false; // Task ended before this week
+    }
+    if (startDate > endOfWeek) return false; // Task starts after this week
+
+    // Check if any day in this week matches the frequency
+    for (let day = new Date(startOfWeek); day <= endOfWeek; day.setDate(day.getDate() + 1)) {
+      const checkDate = new Date(day);
+      checkDate.setHours(0, 0, 0, 0);
+
+      if (checkDate < startDate) continue; // Before start date
+      if (task.endDate) {
+        const endDate = new Date(task.endDate);
+        endDate.setHours(23, 59, 59, 999);
+        if (checkDate > endDate) continue; // After end date
+      }
+
+      if (task.frequency === 'daily') {
+        return true; // At least one day matches
+      } else if (task.frequency === 'weekly') {
+        if (startDate.getDay() === checkDate.getDay()) {
+          const daysDiff = Math.floor((checkDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (daysDiff >= 0 && daysDiff % 7 === 0) return true;
+        }
+      } else if (task.frequency === 'monthly') {
+        if (startDate.getDate() === checkDate.getDate()) {
+          const monthsDiff = (checkDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                            (checkDate.getMonth() - startDate.getMonth());
+          if (monthsDiff >= 0 && monthsDiff % 1 === 0) return true;
+        }
+      }
+    }
+
+    return false;
   });
 };
 

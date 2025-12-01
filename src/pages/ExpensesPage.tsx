@@ -35,6 +35,7 @@ import {
   deleteExpense,
 } from '../services/expenseService';
 import {
+  getRecurringExpenses,
   getUpcomingRecurringExpenses,
   markRecurringExpensePaid,
   deleteRecurringExpense,
@@ -168,8 +169,10 @@ const ExpensesPage: React.FC = () => {
     if (!currentHousehold) return;
 
     try {
-      const upcoming = await getUpcomingRecurringExpenses(currentHousehold.id, 30);
-      setUpcomingRecurring(upcoming);
+      // Get all recurring expenses, not just upcoming ones
+      // This ensures newly created expenses are always visible
+      const allRecurring = await getRecurringExpenses(currentHousehold.id);
+      setUpcomingRecurring(allRecurring);
     } catch (error) {
       logger.error('Error loading recurring expenses:', error);
     }
