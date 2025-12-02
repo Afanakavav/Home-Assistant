@@ -32,7 +32,6 @@ import ExpenseChart from '../components/ExpenseChart';
 import GlobalSearch from '../components/GlobalSearch';
 import ShoppingList from '../components/ShoppingList';
 import BottomNavigation from '../components/BottomNavigation';
-import BadgeSystem from '../components/BadgeSystem';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { getCurrentSeason, getSeasonalTheme, getSeasonalGreeting } from '../utils/seasonalTheme';
 import { logger } from '../utils/logger';
@@ -531,10 +530,7 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* 6. Your Badges */}
-            <BadgeSystem />
-
-            {/* 7. Invite Friends - Compact version */}
+            {/* 6. Invite Friends - Compact version */}
             <Card className="animate-fade-in" style={{ animationDelay: '0.5s' }} sx={{ background: seasonalTheme.gradient }}>
               <CardContent sx={{ py: 1.5 }}>
                 <Box display="flex" alignItems="center" gap={1} mb={1}>

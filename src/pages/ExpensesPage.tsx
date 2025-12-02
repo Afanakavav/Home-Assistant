@@ -18,11 +18,10 @@ import {
   InputLabel,
   Divider,
   LinearProgress,
-  Button,
   IconButton,
   Menu,
 } from '@mui/material';
-import { Add as AddIcon, TrendingUp, AccountBalance, Category as CategoryIcon, Repeat as RepeatIcon, Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, TrendingUp, AccountBalance, Category as CategoryIcon, Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useHousehold } from '../contexts/HouseholdContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -34,19 +33,12 @@ import {
   calculateExpensesByCategory,
   deleteExpense,
 } from '../services/expenseService';
-import {
-  getRecurringExpenses,
-  getUpcomingRecurringExpenses,
-  markRecurringExpensePaid,
-  deleteRecurringExpense,
-} from '../services/recurringExpenseService';
 import ExpenseQuickAdd from '../components/ExpenseQuickAdd';
-import RecurringExpenseAdd from '../components/RecurringExpenseAdd';
 import BottomNavigation from '../components/BottomNavigation';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { exportExpensesToCSV, exportExpensesToPDF } from '../utils/exportService';
 import { logger } from '../utils/logger';
-import type { Expense, ExpenseCategory, RecurringExpense } from '../types';
+import type { Expense, ExpenseCategory } from '../types';
 import { format } from 'date-fns';
 
 const categoryLabels: Record<ExpenseCategory, string> = {
@@ -75,15 +67,12 @@ const ExpensesPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
-  const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | 'all'>('all');
-  const [upcomingRecurring, setUpcomingRecurring] = useState<RecurringExpense[]>([]);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     loadExpenses();
-    loadRecurringExpenses();
   }, [currentHousehold, tabValue, filterCategory]);
 
   const loadExpenses = async () => {
@@ -119,11 +108,6 @@ const ExpensesPage: React.FC = () => {
     showSuccess('Expense added! 💸', '💸');
   }, []);
 
-  const handleRecurringExpenseAdded = useCallback(() => {
-    loadRecurringExpenses();
-    showSuccess('Recurring expense added! 🔄', '🔄');
-  }, []);
-
   const handleDeleteExpense = async (expenseId: string) => {
     if (!currentHousehold) return;
     
@@ -141,21 +125,6 @@ const ExpensesPage: React.FC = () => {
     }
   };
 
-  const handleDeleteRecurringExpense = async (expenseId: string) => {
-    if (!window.confirm('Are you sure you want to delete this recurring expense?')) {
-      return;
-    }
-
-    try {
-      await deleteRecurringExpense(expenseId);
-      loadRecurringExpenses();
-      showSuccess('Recurring expense deleted! 🗑️', '🗑️');
-    } catch (error) {
-      logger.error('Error deleting recurring expense:', error);
-      showSuccess('Error deleting recurring expense', '❌');
-    }
-  };
-
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -163,34 +132,6 @@ const ExpensesPage: React.FC = () => {
   const handleCategoryFilterChange = (category: ExpenseCategory | 'all') => {
     setFilterCategory(category);
     // loadExpenses will be called by useEffect when filterCategory changes
-  };
-
-  const loadRecurringExpenses = async () => {
-    if (!currentHousehold) return;
-
-    try {
-      // Get all recurring expenses, not just upcoming ones
-      // This ensures newly created expenses are always visible
-      const allRecurring = await getRecurringExpenses(currentHousehold.id);
-      setUpcomingRecurring(allRecurring);
-    } catch (error) {
-      logger.error('Error loading recurring expenses:', error);
-    }
-  };
-
-  const handleMarkRecurringPaid = async (recurringId: string) => {
-    if (!currentUser) return;
-
-    try {
-      await markRecurringExpensePaid(recurringId, currentUser.uid);
-      showSuccess('Recurring expense marked as paid! ✅', '✅');
-      await loadRecurringExpenses();
-      // Wait a bit to ensure expense is created before reloading
-      await new Promise(resolve => setTimeout(resolve, 500));
-      await loadExpenses();
-    } catch (error) {
-      logger.error('Error marking recurring expense paid:', error);
-    }
   };
 
   if (!currentHousehold) {
@@ -489,124 +430,6 @@ const ExpensesPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Recurring Expenses */}
-          {tabValue === 0 && (
-            <Card sx={{ mb: 3 }} className="animate-slide-in-up" style={{ animationDelay: '0.15s' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <RepeatIcon sx={{ color: '#FFB86C' }} />
-                    <Typography variant="h3" sx={{ fontWeight: 600 }}>
-                      Recurring Expenses
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => setRecurringDialogOpen(true)}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    Add
-                  </Button>
-                </Box>
-                {upcomingRecurring.length > 0 ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {upcomingRecurring.map((recurring) => {
-                    const daysUntil = Math.ceil(
-                      (new Date(recurring.nextDueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-                    );
-                    const isDueSoon = daysUntil <= 7;
-                    
-                    return (
-                      <Box
-                        key={recurring.id}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          backgroundColor: isDueSoon ? '#E76F5115' : '#F5F5F5',
-                          border: isDueSoon ? '1px solid #E76F5140' : '1px solid transparent',
-                        }}
-                      >
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                          <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                              {recurring.title}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: '#7A7A7A' }}>
-                              {format(recurring.nextDueDate, 'PPP')} 
-                              {daysUntil > 0 && ` (${daysUntil} day${daysUntil !== 1 ? 's' : ''})`}
-                              {daysUntil === 0 && ' (Today!)'}
-                              {daysUntil < 0 && ' (Overdue!)'}
-                            </Typography>
-                          </Box>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, color: '#FFB86C' }}>
-                              €{recurring.amount.toFixed(2)}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteRecurringExpense(recurring.id)}
-                              sx={{
-                                color: '#E76F51',
-                                '&:hover': {
-                                  backgroundColor: '#E76F5120',
-                                },
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        </Box>
-                        <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-                          <Chip
-                            label={categoryLabels[recurring.category]}
-                            size="small"
-                            sx={{
-                              backgroundColor: `${categoryColors[recurring.category]}20`,
-                              color: categoryColors[recurring.category],
-                              fontWeight: 500,
-                              height: 24,
-                            }}
-                          />
-                          <Chip
-                            label={recurring.frequency === 'monthly' ? 'Monthly' : recurring.frequency === 'weekly' ? 'Weekly' : 'Yearly'}
-                            size="small"
-                            sx={{
-                              backgroundColor: '#FFB86C20',
-                              color: '#E89A4A',
-                              fontWeight: 500,
-                              height: 24,
-                            }}
-                          />
-                          {(daysUntil <= 7 || daysUntil < 0) && (
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleMarkRecurringPaid(recurring.id)}
-                              sx={{
-                                textTransform: 'none',
-                                ml: 'auto',
-                              }}
-                            >
-                              Mark as paid
-                            </Button>
-                          )}
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
-                ) : (
-                  <Box sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography variant="body2" sx={{ color: '#7A7A7A' }}>
-                      No recurring expenses. Add one!
-                    </Typography>
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           {/* Expenses List */}
           <Card className="animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
             <CardContent>
@@ -714,13 +537,6 @@ const ExpensesPage: React.FC = () => {
           open={expenseDialogOpen}
           onClose={() => setExpenseDialogOpen(false)}
           onSuccess={handleExpenseAdded}
-        />
-
-        {/* Recurring Expense Dialog */}
-        <RecurringExpenseAdd
-          open={recurringDialogOpen}
-          onClose={() => setRecurringDialogOpen(false)}
-          onSuccess={handleRecurringExpenseAdded}
         />
       </Box>
 
