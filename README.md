@@ -97,7 +97,6 @@ src/
 - [x] Inventory management
 - [x] Plant care tracking
 - [x] Vendor management
-- [x] Badge system for achievements
 - [x] Expense charts and analytics
 - [x] Global search across all data
 - [x] Invite code system for household sharing

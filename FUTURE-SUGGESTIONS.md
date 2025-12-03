@@ -12,7 +12,6 @@ Basato sull'analisi dello stato attuale del progetto, ecco i suggerimenti priori
 - ✅ **Plants** - Gestione piante con reminder irrigazione
 - ✅ **Vendors** - Gestione fornitori e manutenzioni
 - ✅ **Recurring Expenses** - Spese ricorrenti (affitto, bollette)
-- ✅ **Badge System** - Sistema di gamification con badge
 - ✅ **Notifications** - Notifiche browser e FCM (configurato)
 
 ### Integrazioni Completate

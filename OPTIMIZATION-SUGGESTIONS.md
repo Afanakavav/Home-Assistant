@@ -63,14 +63,8 @@ export const getCachedExpenses = async (householdId: string) => {
 };
 ```
 
-### 4. **Ottimizzazione BadgeSystem (MEDIA PRIORITÀ)**
-**Problema**: Check ogni 60 secondi anche quando non necessario
-```typescript
-// ✅ Suggerito: Check solo quando necessario
-// - Check all'avvio
-// - Check dopo azioni utente (aggiunta spesa, task completato)
-// - Rimuovere interval continuo
-```
+### 4. **Ottimizzazioni Future**
+_No specific optimizations pending._
 
 ### 5. **Code Splitting Migliorato (BASSA PRIORITÀ)**
 **Problema**: Alcune pagine potrebbero essere lazy loaded
@@ -294,8 +288,7 @@ const handleExpenseAdded = useCallback(() => {
 ### 🟡 IMPORTANTE (Prossima settimana)
 5. Cache Firestore queries
 6. Loading skeletons
-7. Ottimizzazione BadgeSystem
-8. Implementare TODO mancanti
+7. Implementare TODO mancanti
 
 ### 🟢 NICE TO HAVE (Quando possibile)
 9. Lazy load pagine
