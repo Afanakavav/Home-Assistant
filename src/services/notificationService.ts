@@ -89,8 +89,8 @@ export const checkPlantsNeedingWater = async (householdId: string): Promise<void
       const plantNames = plants.map((p) => p.name).join(', ');
       const notification = new Notification('🌱 Piante da annaffiare', {
         body: `${plants.length} pianta${plants.length > 1 ? 'e' : ''} necessita${plants.length > 1 ? 'no' : ''} di acqua: ${plantNames}`,
-        icon: '/icon-192x192.png',
-        badge: '/icon-192x192.png',
+        icon: '/home-assistant/icon-192x192.png',
+        badge: '/home-assistant/icon-192x192.png',
         tag: 'plants-watering',
       });
 
@@ -113,8 +113,8 @@ export const checkUpcomingMaintenance = async (householdId: string): Promise<voi
       const maintenanceItems = maintenance.map((m) => `${m.vendor.name} - ${m.maintenance.type}`).join(', ');
       const notification = new Notification('🔧 Manutenzioni in arrivo', {
         body: `${maintenance.length} manutenzione${maintenance.length > 1 ? 'i' : ''} in arrivo: ${maintenanceItems}`,
-        icon: '/icon-192x192.png',
-        badge: '/icon-192x192.png',
+        icon: '/home-assistant/icon-192x192.png',
+        badge: '/home-assistant/icon-192x192.png',
         tag: 'maintenance-upcoming',
       });
 

@@ -27,8 +27,8 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification?.title || 'Home Assistant';
   const notificationOptions = {
     body: payload.notification?.body || '',
-    icon: payload.notification?.icon || '/icon-192x192.png',
-    badge: '/icon-192x192.png',
+    icon: payload.notification?.icon || '/home-assistant/icon-192x192.png',
+    badge: '/home-assistant/icon-192x192.png',
     tag: payload.data?.tag || 'default',
   };
 
