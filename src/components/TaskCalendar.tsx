@@ -31,7 +31,7 @@ import {
   ChevronRight,
 } from '@mui/icons-material';
 import type { Task } from '../types';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, isBefore, isAfter, isEqual, getDay, getDate, getMonth, getYear } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, isBefore, isAfter, getDay, getDate } from 'date-fns';
 
 // Room colors
 const roomColors: Record<Task['room'], string> = {
