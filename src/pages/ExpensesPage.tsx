@@ -29,11 +29,13 @@ import { useAppShortcuts } from '../hooks/useKeyboardShortcuts';
 import {
   getExpenses,
   getMonthExpenses,
+  getWeekExpenses,
   calculateTotalExpenses,
   calculateExpensesByCategory,
   deleteExpense,
 } from '../services/expenseService';
 import ExpenseQuickAdd from '../components/ExpenseQuickAdd';
+import ExpenseChart from '../components/ExpenseChart';
 import BottomNavigation from '../components/BottomNavigation';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { exportExpensesToCSV, exportExpensesToPDF } from '../utils/exportService';
@@ -83,6 +85,9 @@ const ExpensesPage: React.FC = () => {
       let loadedExpenses: Expense[];
 
       if (tabValue === 0) {
+        // This week
+        loadedExpenses = await getWeekExpenses(currentHousehold.id);
+      } else if (tabValue === 1) {
         // This month
         loadedExpenses = await getMonthExpenses(currentHousehold.id);
       } else {
@@ -138,26 +143,41 @@ const ExpensesPage: React.FC = () => {
     return null;
   }
 
-  // Memoize month expenses calculation
-  const monthExpenses = useMemo(() => {
+  // Memoize filtered expenses based on tab (for calculations)
+  const filteredExpenses = useMemo(() => {
     const now = new Date();
-    return expenses.filter((e) => {
-      const expenseDate = new Date(e.date);
-      return (
-        expenseDate.getMonth() === now.getMonth() &&
-        expenseDate.getFullYear() === now.getFullYear()
-      );
-    });
-  }, [expenses]);
+    if (tabValue === 0) {
+      // This week - use same logic as getWeekExpenses (Sunday as start)
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+      startOfWeek.setHours(0, 0, 0, 0);
+      return expenses.filter((e) => {
+        const expenseDate = new Date(e.date);
+        return expenseDate >= startOfWeek;
+      });
+    } else if (tabValue === 1) {
+      // This month
+      return expenses.filter((e) => {
+        const expenseDate = new Date(e.date);
+        return (
+          expenseDate.getMonth() === now.getMonth() &&
+          expenseDate.getFullYear() === now.getFullYear()
+        );
+      });
+    } else {
+      // All time
+      return expenses;
+    }
+  }, [expenses, tabValue]);
 
   // Memoize total and breakdown
-  const totalMonth = useMemo(() => calculateTotalExpenses(monthExpenses), [monthExpenses]);
-  const categoryBreakdown = useMemo(() => calculateExpensesByCategory(monthExpenses), [monthExpenses]);
+  const total = useMemo(() => calculateTotalExpenses(filteredExpenses), [filteredExpenses]);
+  const categoryBreakdown = useMemo(() => calculateExpensesByCategory(filteredExpenses), [filteredExpenses]);
 
   // Memoize user balances calculation
   const userBalances = useMemo(() => {
     const balances: { [userId: string]: number } = {};
-    monthExpenses.forEach((expense: Expense) => {
+    filteredExpenses.forEach((expense: Expense) => {
       // User paid this amount
       if (!balances[expense.paidBy]) {
         balances[expense.paidBy] = 0;
@@ -174,7 +194,7 @@ const ExpensesPage: React.FC = () => {
       });
     });
     return balances;
-  }, [monthExpenses]);
+  }, [filteredExpenses]);
 
   // Get household members info
   const members = currentHousehold.members;
@@ -187,9 +207,9 @@ const ExpensesPage: React.FC = () => {
       return {
         category: category as ExpenseCategory,
         amount: amount as number,
-        percentage: totalMonth > 0 ? ((amount as number) / totalMonth) * 100 : 0,
+        percentage: total > 0 ? ((amount as number) / total) * 100 : 0,
       };
-    }), [categoryBreakdown, totalMonth]);
+    }), [categoryBreakdown, total]);
 
   return (
     <>
@@ -253,6 +273,7 @@ const ExpensesPage: React.FC = () => {
                   },
                 }}
               >
+                <Tab label="This Week" />
                 <Tab label="This Month" />
                 <Tab label="All" />
               </Tabs>
@@ -262,10 +283,10 @@ const ExpensesPage: React.FC = () => {
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                   <Box>
                     <Typography variant="body2" sx={{ color: '#7A7A7A', mb: 0.5 }}>
-                      Total {tabValue === 0 ? 'month' : 'all time'}
+                      Total {tabValue === 0 ? 'week' : tabValue === 1 ? 'month' : 'all time'}
                     </Typography>
                     <Typography variant="h3" sx={{ fontWeight: 600, color: '#2C2C2C' }}>
-                      €{totalMonth.toFixed(2)}
+                      €{total.toFixed(2)}
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
@@ -309,8 +330,17 @@ const ExpensesPage: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Expense Charts */}
+          {expenses.length > 0 && (
+            <ExpenseChart
+              expenses={expenses}
+              householdMembers={currentHousehold.members}
+              currentUserId={currentUser?.uid || ''}
+            />
+          )}
+
           {/* Category Breakdown */}
-          {tabValue === 0 && categoryPercentages.length > 0 && (
+          {categoryPercentages.length > 0 && (
             <Card sx={{ mb: 3 }} className="animate-slide-in-up">
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -366,7 +396,7 @@ const ExpensesPage: React.FC = () => {
           )}
 
           {/* Balance Between Users */}
-          {tabValue === 0 && members.length > 1 && (
+          {(tabValue === 0 || tabValue === 1) && members.length > 1 && (
             <Card sx={{ mb: 3 }} className="animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" gap={1} mb={2}>

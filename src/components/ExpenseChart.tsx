@@ -23,7 +23,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { Expense, ExpenseCategory } from '../types';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 
 interface ExpenseChartProps {
   expenses: Expense[];
@@ -54,6 +54,32 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
   currentUserId,
 }) => {
   const [tabValue, setTabValue] = React.useState(0);
+
+  // Memoize weekly trend data (last 5 weeks)
+  const weeklyData = useMemo(() => {
+    const now = new Date();
+    const weeks = [];
+    
+    for (let i = 4; i >= 0; i--) {
+      const weekDate = subWeeks(now, i);
+      const weekStart = startOfWeek(weekDate, { weekStartsOn: 1 }); // Monday as start
+      const weekEnd = endOfWeek(weekDate, { weekStartsOn: 1 });
+      
+      const weekExpenses = expenses.filter((exp) => {
+        const expDate = new Date(exp.date);
+        return expDate >= weekStart && expDate <= weekEnd;
+      });
+      
+      const total = weekExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+      
+      weeks.push({
+        week: `Week ${format(weekStart, 'd MMM')}`,
+        amount: total,
+      });
+    }
+    
+    return weeks;
+  }, [expenses]);
 
   // Memoize monthly trend data (last 3 months)
   const monthlyData = useMemo(() => {
@@ -138,12 +164,50 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
             },
           }}
         >
+          <Tab label="Weekly Trend" />
           <Tab label="Monthly Trend" />
           <Tab label="By Category" />
           {householdMembers.length > 1 && <Tab label="User Comparison" />}
         </Tabs>
 
         {tabValue === 0 && (
+          <Box sx={{ width: '100%', height: 300 }}>
+            {weeklyData.length > 0 ? (
+              <ResponsiveContainer>
+                <LineChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
+                  <XAxis dataKey="week" stroke="#7A7A7A" />
+                  <YAxis stroke="#7A7A7A" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #E0E0E0',
+                      borderRadius: 8,
+                    }}
+                    formatter={(value: any) => [`€${Number(value).toFixed(2)}`, 'Totale']}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#FFB86C"
+                    strokeWidth={3}
+                    dot={{ fill: '#FFB86C', r: 5 }}
+                    name="Expenses"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography variant="body2" sx={{ color: '#7A7A7A' }}>
+                  Not enough data to show chart
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {tabValue === 1 && (
           <Box sx={{ width: '100%', height: 300 }}>
             {monthlyData.length > 0 ? (
               <ResponsiveContainer>
@@ -180,7 +244,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
           </Box>
         )}
 
-        {tabValue === 1 && (
+        {tabValue === 2 && (
           <Box sx={{ width: '100%', height: 300 }}>
             {categoryData.length > 0 ? (
               <ResponsiveContainer>
@@ -223,7 +287,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
           </Box>
         )}
 
-        {tabValue === 2 && householdMembers.length > 1 && (
+        {tabValue === 3 && householdMembers.length > 1 && (
           <Box sx={{ width: '100%', height: 300 }}>
             {userData.length > 0 ? (
               <ResponsiveContainer>
