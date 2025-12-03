@@ -49,6 +49,7 @@ const categoryLabels: Record<ExpenseCategory, string> = {
   transport: 'Transport',
   home: 'Home',
   extra: 'Extra',
+  'eating-out': 'Eating Out',
 };
 
 const categoryColors: Record<ExpenseCategory, string> = {
@@ -57,6 +58,7 @@ const categoryColors: Record<ExpenseCategory, string> = {
   transport: '#FFB86C',
   home: '#85C88A',
   extra: '#A3B18A',
+  'eating-out': '#D4A574',
 };
 
 const ExpensesPage: React.FC = () => {
@@ -112,6 +114,61 @@ const ExpensesPage: React.FC = () => {
     loadExpenses();
     showSuccess('Expense added! 💸', '💸');
   }, []);
+
+  // Temporary helper function for bulk import (exposed to window for console access)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentUser && currentHousehold) {
+      (window as any).importExpensesBulk = async (expensesData: Array<{
+        amount: number;
+        category: ExpenseCategory;
+        date: string;
+        description: string;
+      }>) => {
+        try {
+          const { createExpense, splitExpenseEqually } = await import('../services/expenseService');
+          const members = currentHousehold.members;
+          let successCount = 0;
+          let errorCount = 0;
+
+          for (const expenseData of expensesData) {
+            try {
+              const date = new Date(expenseData.date);
+              date.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+              
+              await createExpense(currentUser.uid, {
+                householdId: currentHousehold.id,
+                amount: expenseData.amount,
+                category: expenseData.category,
+                paidBy: currentUser.uid,
+                splitBetween: splitExpenseEqually(expenseData.amount, members),
+                description: expenseData.description,
+                date: date,
+              });
+              successCount++;
+              // Small delay to avoid rate limiting
+              await new Promise(resolve => setTimeout(resolve, 100));
+            } catch (error) {
+              console.error(`Error importing expense: ${expenseData.description}`, error);
+              errorCount++;
+            }
+          }
+
+          await loadExpenses();
+          showSuccess(`Imported ${successCount} expenses${errorCount > 0 ? ` (${errorCount} errors)` : ''}! 📊`, '✅');
+          return { success: successCount, errors: errorCount };
+        } catch (error) {
+          logger.error('Error in bulk import:', error);
+          showSuccess('Error during bulk import', '❌');
+          return { success: 0, errors: expensesData.length };
+        }
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).importExpensesBulk;
+      }
+    };
+  }, [currentUser, currentHousehold, loadExpenses, showSuccess]);
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (!currentHousehold) return;

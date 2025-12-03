@@ -61,7 +61,7 @@ const ExpenseQuickAdd: React.FC<ExpenseQuickAddProps> = ({ open, onClose, onSucc
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const categories: ExpenseCategory[] = ['groceries', 'bills', 'transport', 'home', 'extra'];
+  const categories: ExpenseCategory[] = ['groceries', 'bills', 'transport', 'home', 'extra', 'eating-out'];
 
   const handleStartRecording = async () => {
     try {

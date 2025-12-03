@@ -13,7 +13,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { RecurringExpense } from '../types';
+import type { RecurringExpense, ExpenseCategory } from '../types';
 import { createExpense, splitExpenseEqually } from './expenseService';
 import { getHouseholdById } from './householdService';
 
@@ -21,7 +21,7 @@ export interface CreateRecurringExpenseData {
   householdId: string;
   title: string;
   amount: number;
-  category: 'groceries' | 'bills' | 'transport' | 'home' | 'extra';
+  category: ExpenseCategory;
   frequency: 'monthly' | 'weekly' | 'yearly';
   dayOfMonth?: number;
   dayOfWeek?: number;

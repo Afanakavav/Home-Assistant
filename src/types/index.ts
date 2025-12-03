@@ -1,6 +1,6 @@
 // Core types for Home Assistant
 
-export type ExpenseCategory = 'groceries' | 'bills' | 'transport' | 'home' | 'extra';
+export type ExpenseCategory = 'groceries' | 'bills' | 'transport' | 'home' | 'extra' | 'eating-out';
 
 export interface User {
   uid: string;

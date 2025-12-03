@@ -37,6 +37,7 @@ const categoryLabels: Record<ExpenseCategory, string> = {
   transport: 'Transport',
   home: 'Home',
   extra: 'Extra',
+  'eating-out': 'Eating Out',
 };
 
 const categoryColors: Record<ExpenseCategory, string> = {
@@ -45,6 +46,7 @@ const categoryColors: Record<ExpenseCategory, string> = {
   transport: '#FFB86C',
   home: '#85C88A',
   extra: '#A3B18A',
+  'eating-out': '#D4A574',
 };
 
 
