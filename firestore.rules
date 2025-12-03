@@ -61,20 +61,6 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
     }
     
-    // Recurring expenses: household members can read/write
-    match /recurringExpenses/{expenseId} {
-      // Allow read if user is member of the household
-      allow read: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
-      
-      // Allow create if user is member of the household (check request.resource for new documents)
-      allow create: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.members;
-      
-      // Allow update/delete if user is member of the household
-      allow update, delete: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
-    }
     
     // Plants: household members can read/write
     match /plants/{plantId} {

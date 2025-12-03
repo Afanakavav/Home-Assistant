@@ -4,28 +4,7 @@ Questo documento contiene le funzionalità da implementare in futuro, come richi
 
 ## Priorità Alta
 
-### 1. Dialog per Aggiungere Spese Ricorrenti
-**Stato attuale:** Le spese ricorrenti sono solo visualizzate in ExpensesPage, ma non c'è modo di crearle dall'UI.
-
-**Da implementare:**
-- Creare componente `RecurringExpenseAdd.tsx` (simile a `ExpenseQuickAdd.tsx`)
-- Aggiungere dialog in ExpensesPage con pulsante "Aggiungi Spesa Ricorrente"
-- Permettere di configurare:
-  - Titolo (es. "Affitto", "Bolletta Enel")
-  - Importo
-  - Categoria
-  - Frequenza (mensile/settimanale/annuale)
-  - Giorno del mese/settimana
-  - Auto-creazione spesa quando scade
-  - Utente predefinito che paga
-
-**File da creare/modificare:**
-- `src/components/RecurringExpenseAdd.tsx` (nuovo)
-- `src/pages/ExpensesPage.tsx` (aggiungere dialog)
-
----
-
-### 2. Collegamento Inventory → Shopping List
+### 1. Collegamento Inventory → Shopping List
 **Stato attuale:** Inventory e Shopping List sono separati.
 
 **Da implementare:**
@@ -40,7 +19,7 @@ Questo documento contiene le funzionalità da implementare in futuro, come richi
 
 ---
 
-### 3. Collegamento Tasks → Inventory
+### 2. Collegamento Tasks → Inventory
 **Stato attuale:** Tasks e Inventory sono separati.
 
 **Da implementare:**
@@ -57,7 +36,7 @@ Questo documento contiene le funzionalità da implementare in futuro, come richi
 
 ---
 
-### 4. Notifiche Push per Piante e Manutenzioni
+### 3. Notifiche Push per Piante e Manutenzioni
 **Stato attuale:** Nessuna notifica push implementata.
 
 **Da implementare:**
@@ -84,10 +63,9 @@ Questo documento contiene le funzionalità da implementare in futuro, come richi
 ## Note di Implementazione
 
 ### Ordine Consigliato
-1. **Dialog Spese Ricorrenti** - Più semplice, migliora subito l'UX
-2. **Inventory → Shopping List** - Logica diretta, alto valore
-3. **Tasks → Inventory** - Richiede modifiche ai types, più complesso
-4. **Notifiche Push** - Richiede setup FCM, più complesso ma alto valore
+1. **Inventory → Shopping List** - Logica diretta, alto valore
+2. **Tasks → Inventory** - Richiede modifiche ai types, più complesso
+3. **Notifiche Push** - Richiede setup FCM, più complesso ma alto valore
 
 ### Considerazioni Tecniche
 - Per le notifiche push, considerare anche notifiche email come fallback

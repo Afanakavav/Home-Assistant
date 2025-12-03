@@ -117,24 +117,6 @@ export interface InventoryItem {
   createdBy: string;
 }
 
-export interface RecurringExpense {
-  id: string;
-  householdId: string;
-  title: string;
-  amount: number;
-  category: ExpenseCategory;
-  frequency: 'monthly' | 'weekly' | 'yearly';
-  dayOfMonth?: number; // 1-31 for monthly
-  dayOfWeek?: number; // 0-6 for weekly (0 = Sunday)
-  month?: number; // 0-11 for yearly
-  nextDueDate: Date;
-  lastPaidDate?: Date;
-  paidBy?: string; // Default user who pays
-  autoCreate: boolean; // Auto-create expense when due
-  createdAt: Date;
-  createdBy: string;
-}
-
 export interface Plant {
   id: string;
   householdId: string;

@@ -28,7 +28,6 @@ import { getTodayTasks, completeTask } from '../services/taskService';
 import { useNotification } from '../contexts/NotificationContext';
 import ExpenseQuickAdd from '../components/ExpenseQuickAdd';
 import TaskQuickAdd from '../components/TaskQuickAdd';
-import ExpenseChart from '../components/ExpenseChart';
 import GlobalSearch from '../components/GlobalSearch';
 import ShoppingList from '../components/ShoppingList';
 import BottomNavigation from '../components/BottomNavigation';
@@ -444,16 +443,7 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* 4. Expense Charts */}
-            {expenses.length > 0 && (
-              <ExpenseChart
-                expenses={expenses}
-                householdMembers={currentHousehold.members}
-                currentUserId={currentUser?.uid || ''}
-              />
-            )}
-
-            {/* 5. Today Expenses */}
+            {/* 4. Today Expenses */}
             <Card className="animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
