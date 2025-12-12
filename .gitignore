@@ -41,4 +41,6 @@ ui-debug.log
 # Generated service worker (contains injected env vars during build)
 # Note: The template file (firebase-messaging-sw.template.js) should be committed
 # but the generated file should not contain real keys in the repository
+public/firebase-messaging-sw.js
+dist/firebase-messaging-sw.js
 

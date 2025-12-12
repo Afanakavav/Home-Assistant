@@ -6,6 +6,7 @@ Create a `.env` file in the project root with the following content:
 # Firebase Configuration
 # IMPORTANT: Replace these placeholders with your actual Firebase credentials
 # Get these values from Firebase Console > Project Settings > General > Your apps
+# NEVER commit real API keys to the repository!
 VITE_FIREBASE_API_KEY=your-firebase-api-key-here
 VITE_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your-project-id
@@ -21,6 +22,7 @@ VITE_FIREBASE_VAPID_KEY=your_vapid_key_here
 # Google Cloud Speech-to-Text API Key (Optional)
 # Get your API key from: https://console.cloud.google.com/apis/credentials
 # IMPORTANT: Restrict this API key to your domain in Google Cloud Console
+# NEVER commit real API keys to the repository!
 VITE_GOOGLE_SPEECH_API_KEY=your-google-speech-api-key-here
 ```
 
