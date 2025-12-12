@@ -16,14 +16,13 @@ import {
   Checkbox,
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon, RadioButtonUnchecked as RadioButtonUncheckedIcon } from '@mui/icons-material';
-import { Add as AddIcon, ShoppingCart as ShoppingCartIcon, EmojiEmotions as EmojiIcon, Search as SearchIcon, ContentCopy as ContentCopyIcon, PersonAdd as PersonAddIcon, Refresh as RefreshIcon, CleaningServices as CleaningServicesIcon } from '@mui/icons-material';
+import { Add as AddIcon, ShoppingCart as ShoppingCartIcon, EmojiEmotions as EmojiIcon, Search as SearchIcon, CleaningServices as CleaningServicesIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useHousehold } from '../contexts/HouseholdContext';
 import { useAppShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useOffline } from '../hooks/useOffline';
 import { getMonthExpenses } from '../services/expenseService';
-import { regenerateInviteCode } from '../services/householdService';
 import { getTodayTasks, completeTask } from '../services/taskService';
 import { useNotification } from '../contexts/NotificationContext';
 import ExpenseQuickAdd from '../components/ExpenseQuickAdd';
@@ -39,7 +38,7 @@ import { format } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { currentUser } = useAuth();
-  const { currentHousehold, loading, refreshHousehold } = useHousehold();
+  const { currentHousehold, loading } = useHousehold();
   const { showSuccess, showError } = useNotification();
   const navigate = useNavigate();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -49,7 +48,6 @@ const Dashboard: React.FC = () => {
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [regeneratingCode, setRegeneratingCode] = useState(false);
   
   // Enable keyboard shortcuts with search handler
   useAppShortcuts(() => setSearchDialogOpen(true));
@@ -57,11 +55,6 @@ const Dashboard: React.FC = () => {
   // Monitor offline status
   const { isOnline, wasOffline } = useOffline();
 
-  useEffect(() => {
-    if (!loading && !currentHousehold) {
-      navigate('/household-setup');
-    }
-  }, [currentHousehold, loading, navigate]);
 
   useEffect(() => {
     const loadExpenses = async () => {
@@ -132,33 +125,6 @@ const Dashboard: React.FC = () => {
     }
   }, [currentUser, currentHousehold, showSuccess, showError]);
 
-  const handleCopyInviteCode = useCallback(async () => {
-    if (!currentHousehold?.inviteCode) return;
-    
-    try {
-      await navigator.clipboard.writeText(currentHousehold.inviteCode);
-      showSuccess('Invite code copied to clipboard! 📋', '✅');
-    } catch (error) {
-      logger.error('Error copying invite code:', error);
-      showError('Failed to copy invite code');
-    }
-  }, [currentHousehold, showSuccess, showError]);
-
-  const handleRegenerateInviteCode = useCallback(async () => {
-    if (!currentHousehold) return;
-    
-    setRegeneratingCode(true);
-    try {
-      await regenerateInviteCode(currentHousehold.id);
-      await refreshHousehold();
-      showSuccess('Invite code regenerated! 🔄', '✅');
-    } catch (error) {
-      logger.error('Error regenerating invite code:', error);
-      showError('Failed to regenerate invite code');
-    } finally {
-      setRegeneratingCode(false);
-    }
-  }, [currentHousehold, refreshHousehold, showSuccess, showError]);
 
   // Memoize calculations BEFORE conditional returns (React hooks rules)
   // Memoize today expenses calculation
@@ -199,7 +165,19 @@ const Dashboard: React.FC = () => {
   const seasonalTheme = useMemo(() => getSeasonalTheme(season), [season]);
   const seasonalGreeting = useMemo(() => getSeasonalGreeting(season), [season]);
 
-  if (loading || loadingExpenses) {
+  // Show loading state while household is being loaded
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#FFF9F3', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}>
+        <CircularProgress size={40} />
+        <Typography variant="body1" color="text.secondary">
+          Loading household...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (loadingExpenses) {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: '#FFF9F3', p: 3 }}>
         <LoadingSkeleton variant="card" count={3} />
@@ -207,8 +185,18 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // If no household after loading, show error message
   if (!currentHousehold) {
-    return null; // Will redirect
+    return (
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#FFF9F3', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, p: 3 }}>
+        <Typography variant="h6" color="error">
+          Error: Household not found
+        </Typography>
+        <Typography variant="body2" color="text.secondary" align="center">
+          Please try logging out and logging back in.
+        </Typography>
+      </Box>
+    );
   }
 
   return (
@@ -520,88 +508,6 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* 6. Invite Friends - Compact version */}
-            <Card className="animate-fade-in" style={{ animationDelay: '0.5s' }} sx={{ background: seasonalTheme.gradient }}>
-              <CardContent sx={{ py: 1.5 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <PersonAddIcon sx={{ color: seasonalTheme.primary, fontSize: 20 }} />
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: '#2C2C2C' }}>
-                    Invite Friends
-                  </Typography>
-                </Box>
-                {currentHousehold.inviteCode ? (
-                  <>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        p: 1,
-                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                        borderRadius: 1.5,
-                        border: `1px solid ${seasonalTheme.primary}`,
-                        mb: 1,
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          color: seasonalTheme.primary,
-                          fontFamily: 'monospace',
-                          letterSpacing: 1,
-                          flexGrow: 1,
-                          textAlign: 'center',
-                          fontSize: '0.85rem',
-                        }}
-                      >
-                        {currentHousehold.inviteCode}
-                      </Typography>
-                      <IconButton
-                        onClick={handleCopyInviteCode}
-                        size="small"
-                        sx={{
-                          color: seasonalTheme.primary,
-                          padding: '4px',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 184, 108, 0.2)',
-                          },
-                        }}
-                      >
-                        <ContentCopyIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                    {currentHousehold.inviteExpiresAt && (
-                      <Typography variant="caption" sx={{ color: '#7A7A7A', fontSize: '0.7rem' }}>
-                        Expires: {format(currentHousehold.inviteExpiresAt, 'MMM d, yyyy')}
-                      </Typography>
-                    )}
-                  </>
-                ) : (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<RefreshIcon />}
-                    onClick={handleRegenerateInviteCode}
-                    disabled={regeneratingCode}
-                    fullWidth
-                    sx={{
-                      borderColor: seasonalTheme.primary,
-                      color: seasonalTheme.primary,
-                      textTransform: 'none',
-                      fontSize: '0.75rem',
-                      py: 0.5,
-                      '&:hover': {
-                        borderColor: seasonalTheme.primary,
-                        backgroundColor: 'rgba(255, 184, 108, 0.1)',
-                      },
-                    }}
-                  >
-                    {regeneratingCode ? 'Generating...' : 'Generate Code'}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
           </Box>
         </Container>
 

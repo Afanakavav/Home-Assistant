@@ -6,23 +6,18 @@ import {
   TextField,
   Button,
   Typography,
-  Link,
   Alert,
-  Divider,
 } from '@mui/material';
-import { Google as GoogleIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const [isSignup, setIsSignup] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { signup, login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,27 +26,11 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isSignup) {
-        await signup(email, password, displayName);
-      } else {
-        await login(email, password);
-      }
-      navigate('/household-setup');
+      await login(username, password);
+      // Navigate to dashboard - HouseholdContext will handle loading the household
+      navigate('/');
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      await loginWithGoogle();
-      navigate('/household-setup');
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.message || 'Invalid username or password');
     } finally {
       setLoading(false);
     }
@@ -65,10 +44,11 @@ const Login: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          backgroundColor: '#FFF9F3',
         }}
       >
         <Paper sx={{ p: 4, width: '100%' }}>
-          <Typography variant="h4" gutterBottom align="center">
+          <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 600 }}>
             Home Assistant
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
@@ -81,37 +61,23 @@ const Login: React.FC = () => {
             </Alert>
           )}
 
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<GoogleIcon />}
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            sx={{ mb: 2 }}
-          >
-            Continue with Google
-          </Button>
-
-          <Divider sx={{ my: 2 }}>OR</Divider>
-
           <form onSubmit={handleSubmit}>
-            {isSignup && (
-              <TextField
-                fullWidth
-                label="Display Name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                margin="normal"
-              />
-            )}
             <TextField
               fullWidth
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               margin="normal"
               required
+              autoFocus
+              placeholder="Francesco or Martina"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: '#FFB86C',
+                  },
+                },
+              }}
             />
             <TextField
               fullWidth
@@ -121,29 +87,31 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               margin="normal"
               required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: '#FFB86C',
+                  },
+                },
+              }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               disabled={loading}
-              sx={{ mt: 2, mb: 2 }}
+              sx={{
+                mt: 3,
+                mb: 2,
+                backgroundColor: '#FFB86C',
+                '&:hover': {
+                  backgroundColor: '#E89A4A',
+                },
+              }}
             >
-              {isSignup ? 'Sign Up' : 'Login'}
+              {loading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-
-          <Box textAlign="center">
-            <Link
-              component="button"
-              variant="body2"
-              onClick={() => setIsSignup(!isSignup)}
-            >
-              {isSignup
-                ? 'Already have an account? Login'
-                : "Don't have an account? Sign Up"}
-            </Link>
-          </Box>
         </Paper>
       </Box>
     </Container>

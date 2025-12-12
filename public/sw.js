@@ -1,5 +1,5 @@
 // Service Worker for PWA offline support
-const CACHE_NAME = 'home-assistant-v1';
+const CACHE_NAME = 'home-assistant-v2';
 const urlsToCache = [
   '/home-assistant/',
   '/home-assistant/index.html',
@@ -39,15 +39,34 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const url = new URL(event.request.url);
+
   // Skip Firebase and external API requests
   if (
-    event.request.url.includes('firebase') ||
-    event.request.url.includes('googleapis.com') ||
-    event.request.url.includes('google.com')
+    url.hostname.includes('firebase') ||
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('google.com') ||
+    url.hostname.includes('fonts.googleapis.com') ||
+    url.hostname.includes('fonts.gstatic.com')
   ) {
     return;
   }
 
+  // Skip module scripts and assets - always fetch from network
+  if (
+    url.pathname.includes('/assets/') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.mjs') ||
+    url.pathname.endsWith('.css') ||
+    event.request.destination === 'script' ||
+    event.request.destination === 'style'
+  ) {
+    // Always fetch from network for assets to avoid MIME type issues
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // For HTML pages, use cache-first strategy
   event.respondWith(
     caches.match(event.request).then((response) => {
       // Return cached version or fetch from network
@@ -59,12 +78,15 @@ self.addEventListener('fetch', (event) => {
             return response;
           }
 
-          // Clone the response
-          const responseToCache = response.clone();
+          // Only cache HTML pages
+          if (event.request.destination === 'document' || url.pathname.endsWith('.html')) {
+            // Clone the response
+            const responseToCache = response.clone();
 
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
 
           return response;
         })

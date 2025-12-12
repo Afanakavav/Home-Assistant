@@ -12,7 +12,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Lazy load pages for code splitting
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const HouseholdSetup = lazy(() => import('./pages/HouseholdSetup'));
 const ShoppingListPage = lazy(() => import('./pages/ShoppingListPage'));
 const ExpensesPage = lazy(() => import('./pages/ExpensesPage'));
 const TasksPage = lazy(() => import('./pages/TasksPage'));
@@ -206,16 +205,6 @@ function App() {
                       <Login />
                     </Suspense>
                   } 
-                />
-                <Route
-                  path="/household-setup"
-                  element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingSpinner message="Loading setup..." />}>
-                        <HouseholdSetup />
-                      </Suspense>
-                    </ProtectedRoute>
-                  }
                 />
                 <Route
                   path="/"

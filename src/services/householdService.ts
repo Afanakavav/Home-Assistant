@@ -3,116 +3,64 @@ import {
   doc,
   getDoc,
   getDocs,
-  setDoc,
-  updateDoc,
   query,
   where,
-  arrayUnion,
-  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Household } from '../types';
 
-// Generate invite code: HOME-XXXXXX
-const generateInviteCode = (): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const code = Array.from({ length: 6 }, () =>
-    chars.charAt(Math.floor(Math.random() * chars.length))
-  ).join('');
-  return `HOME-${code}`;
+// Helper function to convert Firestore Timestamp or Date to Date
+const toDate = (value: any): Date | undefined => {
+  if (!value) return undefined;
+  if (value instanceof Date) return value;
+  if (value.toDate && typeof value.toDate === 'function') {
+    return value.toDate();
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return new Date(value);
+  }
+  return undefined;
 };
 
-export const createHousehold = async (
-  userId: string,
-  name: string
-): Promise<string> => {
-  const householdRef = doc(collection(db, 'households'));
-  const inviteCode = generateInviteCode();
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
-  const household: Omit<Household, 'id'> = {
-    name,
-    createdAt: new Date(),
-    members: [userId],
-    inviteCode,
-    inviteExpiresAt: expiresAt,
-    settings: {
-      currency: 'EUR',
-      timezone: 'Europe/Dublin',
-    },
-  };
-
-  await setDoc(householdRef, {
-    ...household,
-    createdAt: serverTimestamp(),
-    inviteExpiresAt: expiresAt,
-  });
-
-  // Add household to user document
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    households: arrayUnion(householdRef.id),
-  });
-
-  return householdRef.id;
-};
-
-export const joinHousehold = async (
-  userId: string,
-  inviteCode: string
-): Promise<void> => {
-  // Find household by invite code
-  const householdsRef = collection(db, 'households');
-  const q = query(householdsRef, where('inviteCode', '==', inviteCode.toUpperCase()));
-  const querySnapshot = await getDocs(q);
-
-  if (querySnapshot.empty) {
-    throw new Error('Invalid invite code');
-  }
-
-  const householdDoc = querySnapshot.docs[0];
-  const householdData = householdDoc.data();
-
-  // Check if invite expired
-  if (householdData.inviteExpiresAt?.toDate() < new Date()) {
-    throw new Error('Invite code has expired');
-  }
-
-  // Check if user is already a member
-  if (householdData.members?.includes(userId)) {
-    throw new Error('You are already a member of this household');
-  }
-
-  // Add user to household
-  await updateDoc(householdDoc.ref, {
-    members: arrayUnion(userId),
-  });
-
-  // Add household to user document
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    households: arrayUnion(householdDoc.id),
-  });
-};
 
 export const getHouseholdByUser = async (userId: string): Promise<Household | null> => {
   const householdsRef = collection(db, 'households');
+  
+  // For custom auth users (Francesco/Martina), always get the first household
+  // regardless of membership (since there's only one household)
+  if (userId.startsWith('user-')) {
+    const allHouseholds = await getDocs(householdsRef);
+    
+    if (allHouseholds.empty) {
+      return null;
+    }
+    
+    const householdDoc = allHouseholds.docs[0];
+    const data = householdDoc.data();
+    
+    return {
+      id: householdDoc.id,
+      ...data,
+      createdAt: toDate(data.createdAt) || new Date(),
+    } as Household;
+  }
+  
+  // For other users, try to find household where user is a member
   const q = query(householdsRef, where('members', 'array-contains', userId));
   const querySnapshot = await getDocs(q);
 
-  if (querySnapshot.empty) {
-    return null;
+  if (!querySnapshot.empty) {
+    const householdDoc = querySnapshot.docs[0];
+    const data = householdDoc.data();
+    return {
+      id: householdDoc.id,
+      ...data,
+      createdAt: toDate(data.createdAt) || new Date(),
+    } as Household;
   }
 
-  const householdDoc = querySnapshot.docs[0];
-  const data = householdDoc.data();
-  return {
-    id: householdDoc.id,
-    ...data,
-    createdAt: data.createdAt?.toDate() || new Date(),
-    inviteExpiresAt: data.inviteExpiresAt?.toDate(),
-  } as Household;
+  return null;
 };
 
 export const getHouseholdById = async (householdId: string): Promise<Household | null> => {
@@ -127,22 +75,8 @@ export const getHouseholdById = async (householdId: string): Promise<Household |
   return {
     id: householdSnap.id,
     ...data,
-    createdAt: data.createdAt?.toDate() || new Date(),
-    inviteExpiresAt: data.inviteExpiresAt?.toDate(),
+    createdAt: toDate(data.createdAt) || new Date(),
   } as Household;
 };
 
-export const regenerateInviteCode = async (householdId: string): Promise<string> => {
-  const householdRef = doc(db, 'households', householdId);
-  const newInviteCode = generateInviteCode();
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
-
-  await updateDoc(householdRef, {
-    inviteCode: newInviteCode,
-    inviteExpiresAt: expiresAt,
-  });
-
-  return newInviteCode;
-};
 

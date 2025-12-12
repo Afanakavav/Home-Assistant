@@ -22,7 +22,6 @@ export interface CreateTaskData {
   room: 'kitchen' | 'bathroom' | 'bedroom' | 'living' | 'other';
   frequency: 'daily' | 'weekly' | 'monthly' | 'one-time';
   estimatedMinutes: number;
-  assignedTo?: string;
   requiredProducts?: string[];
   dueDate?: Date;
   startDate?: Date;
@@ -67,7 +66,6 @@ export const getTasks = async (
     completed?: boolean;
     room?: string;
     frequency?: string;
-    assignedTo?: string;
   }
 ): Promise<Task[]> => {
   const tasksRef = collection(db, 'tasks');
@@ -90,10 +88,6 @@ export const getTasks = async (
     q = query(q, where('frequency', '==', options.frequency));
   }
 
-  if (options?.assignedTo) {
-    q = query(q, where('assignedTo', '==', options.assignedTo));
-  }
-
   const querySnapshot = await getDocs(q);
   const tasks = querySnapshot.docs.map((doc) => {
     const data = doc.data();
@@ -105,7 +99,6 @@ export const getTasks = async (
       room: data.room,
       frequency: data.frequency,
       estimatedMinutes: data.estimatedMinutes,
-      assignedTo: data.assignedTo,
       completed: data.completed || false,
       completedBy: data.completedBy,
       completedAt: data.completedAt?.toDate() || undefined,

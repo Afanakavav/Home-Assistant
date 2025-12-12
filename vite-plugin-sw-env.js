@@ -37,8 +37,14 @@ export function swEnvPlugin() {
         .map(([key]) => key);
       
       if (missingVars.length > 0) {
-        console.warn(`⚠️  Missing environment variables: ${missingVars.join(', ')}`);
-        console.warn('   Service worker will be generated with empty values. Set these in your .env file.');
+        // Only show warning in development mode or if explicitly requested
+        // In production builds, these will be empty but the app will still work
+        // if Firebase config is provided at runtime or via other means
+        if (process.env.NODE_ENV === 'development' || process.env.SHOW_ENV_WARNINGS === 'true') {
+          console.warn(`⚠️  Missing environment variables: ${missingVars.join(', ')}`);
+          console.warn('   Service worker will be generated with empty values.');
+          console.warn('   To set these, copy .env.example to .env and fill in your Firebase credentials.');
+        }
       }
       
       // Replace placeholders

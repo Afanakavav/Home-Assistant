@@ -56,7 +56,6 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
   const [room, setRoom] = useState<Task['room']>('kitchen');
   const [frequency, setFrequency] = useState<Task['frequency']>('weekly');
   const [estimatedMinutes, setEstimatedMinutes] = useState(15);
-  const [assignedTo, setAssignedTo] = useState<string>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -160,7 +159,6 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
         room,
         frequency,
         estimatedMinutes,
-        assignedTo: assignedTo || undefined,
         requiredProducts: selectedProducts.length > 0 ? selectedProducts : undefined,
         dueDate,
         startDate: start,
@@ -174,7 +172,6 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
       setRoom('kitchen');
       setFrequency('weekly');
       setEstimatedMinutes(15);
-      setAssignedTo('');
       setSelectedTemplate(null);
       setSelectedProducts([]);
       setStartDate(getTodayDateString());
@@ -196,7 +193,6 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
     setRoom('kitchen');
     setFrequency('weekly');
     setEstimatedMinutes(15);
-    setAssignedTo('');
     setError('');
     setSelectedTemplate(null);
     setSelectedProducts([]);
@@ -206,8 +202,6 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
     setLoading(false);
     onClose();
   };
-
-  const members = currentHousehold?.members || [];
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -371,32 +365,6 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ open, onClose, onSuccess })
               ))}
             </Select>
           </FormControl>
-
-          {members.length > 1 && (
-            <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
-              <InputLabel id="assigned-label">Assigned to (optional)</InputLabel>
-              <Select
-                labelId="assigned-label"
-                id="assigned"
-                value={assignedTo}
-                label="Assigned to (optional)"
-                onChange={(e) => setAssignedTo(e.target.value)}
-              >
-                <MenuItem value="">None (rotating)</MenuItem>
-                {members.map((memberId) => {
-                  const isCurrentUser = memberId === currentUser?.uid;
-                  const memberName = isCurrentUser
-                    ? currentUser?.displayName?.split(' ')[0] || currentUser?.email?.split('@')[0] || 'You'
-                    : 'Other user';
-                  return (
-                    <MenuItem key={memberId} value={memberId}>
-                      {memberName}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          )}
 
           {/* Product selection */}
           {inventoryItems.length > 0 && (

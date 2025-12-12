@@ -21,7 +21,7 @@ import {
   IconButton,
   Menu,
 } from '@mui/material';
-import { Add as AddIcon, TrendingUp, AccountBalance, Category as CategoryIcon, Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, TrendingUp, Category as CategoryIcon, Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useHousehold } from '../contexts/HouseholdContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -231,31 +231,6 @@ const ExpensesPage: React.FC = () => {
   const total = useMemo(() => calculateTotalExpenses(filteredExpenses), [filteredExpenses]);
   const categoryBreakdown = useMemo(() => calculateExpensesByCategory(filteredExpenses), [filteredExpenses]);
 
-  // Memoize user balances calculation
-  const userBalances = useMemo(() => {
-    const balances: { [userId: string]: number } = {};
-    filteredExpenses.forEach((expense: Expense) => {
-      // User paid this amount
-      if (!balances[expense.paidBy]) {
-        balances[expense.paidBy] = 0;
-      }
-      balances[expense.paidBy] += expense.amount;
-
-      // Subtract what each user owes
-      Object.entries(expense.splitBetween).forEach((entry: [string, unknown]) => {
-        const [userId, amount] = entry;
-        if (!balances[userId]) {
-          balances[userId] = 0;
-        }
-        balances[userId] -= amount as number;
-      });
-    });
-    return balances;
-  }, [filteredExpenses]);
-
-  // Get household members info
-  const members = currentHousehold.members;
-  const currentUserBalance = useMemo(() => userBalances[currentUser?.uid || ''] || 0, [userBalances, currentUser]);
 
   // Memoize category percentages
   const categoryPercentages = useMemo(() => 
@@ -335,37 +310,6 @@ const ExpensesPage: React.FC = () => {
                 <Tab label="All" />
               </Tabs>
 
-              {/* Total and Balance Summary */}
-              <Box sx={{ mb: 3 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Box>
-                    <Typography variant="body2" sx={{ color: '#7A7A7A', mb: 0.5 }}>
-                      Total {tabValue === 0 ? 'week' : tabValue === 1 ? 'month' : 'all time'}
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 600, color: '#2C2C2C' }}>
-                      €{total.toFixed(2)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="body2" sx={{ color: '#7A7A7A', mb: 0.5 }}>
-                      Your balance
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 600,
-                        color: currentUserBalance >= 0 ? '#6A994E' : '#E76F51',
-                      }}
-                    >
-                      {currentUserBalance >= 0 ? '+' : ''}€{Math.abs(currentUserBalance).toFixed(2)}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#7A7A7A' }}>
-                      {currentUserBalance >= 0 ? 'owed to you' : 'you owe'}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-
               {/* Category Filter */}
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel id="category-filter-label">Filter by category</InputLabel>
@@ -384,6 +328,16 @@ const ExpensesPage: React.FC = () => {
                   ))}
                 </Select>
               </FormControl>
+
+              {/* Total Summary */}
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: '#7A7A7A', mb: 0.5 }}>
+                  Total {tabValue === 0 ? 'week' : tabValue === 1 ? 'month' : 'all time'}
+                </Typography>
+                <Typography variant="h3" sx={{ fontWeight: 600, color: '#2C2C2C' }}>
+                  €{total.toFixed(2)}
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
 
@@ -391,8 +345,6 @@ const ExpensesPage: React.FC = () => {
           {expenses.length > 0 && (
             <ExpenseChart
               expenses={expenses}
-              householdMembers={currentHousehold.members}
-              currentUserId={currentUser?.uid || ''}
             />
           )}
 
@@ -452,70 +404,6 @@ const ExpensesPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Balance Between Users */}
-          {(tabValue === 0 || tabValue === 1) && members.length > 1 && (
-            <Card sx={{ mb: 3 }} className="animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <AccountBalance sx={{ color: '#6A994E' }} />
-                  <Typography variant="h3" sx={{ fontWeight: 600 }}>
-                    Balance Between Users
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {members.map((memberId) => {
-                    const balance = userBalances[memberId] || 0;
-                    const isCurrentUser = memberId === currentUser?.uid;
-                    const memberName = isCurrentUser
-                      ? currentUser?.displayName?.split(' ')[0] || currentUser?.email?.split('@')[0] || 'You'
-                      : 'Other user';
-
-                    return (
-                      <Box
-                        key={memberId}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          backgroundColor: isCurrentUser ? '#FFB86C15' : '#F5F5F5',
-                          border: isCurrentUser ? '1px solid #FFB86C40' : '1px solid transparent',
-                        }}
-                      >
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {memberName}
-                          </Typography>
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              fontWeight: 600,
-                              color: balance >= 0 ? '#6A994E' : '#E76F51',
-                            }}
-                          >
-                            {balance >= 0 ? '+' : ''}€{Math.abs(balance).toFixed(2)}
-                          </Typography>
-                        </Box>
-                        {balance < 0 && (
-                          <Typography variant="caption" sx={{ color: '#7A7A7A', mt: 0.5, display: 'block' }}>
-                            Owes €{Math.abs(balance).toFixed(2)}
-                          </Typography>
-                        )}
-                        {balance > 0 && (
-                          <Typography variant="caption" sx={{ color: '#7A7A7A', mt: 0.5, display: 'block' }}>
-                            Paid €{balance.toFixed(2)} more
-                          </Typography>
-                        )}
-                        {balance === 0 && (
-                          <Typography variant="caption" sx={{ color: '#7A7A7A', mt: 0.5, display: 'block' }}>
-                            Balanced
-                          </Typography>
-                        )}
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Expenses List */}
           <Card className="animate-slide-in-up" style={{ animationDelay: '0.2s' }}>

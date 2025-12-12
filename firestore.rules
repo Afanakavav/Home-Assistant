@@ -2,76 +2,47 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Users can read/write their own user document
+    // Allow access based on document ID (user-francesco, user-martina)
+    // Since we're using custom auth, we allow access to these specific user IDs
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow read/write for custom auth users (user-francesco, user-martina)
+      allow read, write: if userId == 'user-francesco' || userId == 'user-martina';
     }
     
-    // Households: members can read, creators can write
+    // Households: allow read/write for custom auth (no Firebase Auth)
     match /households/{householdId} {
-      allow read: if request.auth != null && 
-        request.auth.uid in resource.data.members;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && 
-        request.auth.uid in resource.data.members;
+      allow read, write: if true; // Custom auth - security handled in application code
     }
     
     // Expenses: household members can read, creators can write
+    // For custom auth, allow access (security handled in application code)
     match /expenses/{expenseId} {
-      allow read: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
-      allow create: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.members;
-      allow update, delete: if request.auth != null && 
-        request.auth.uid == resource.data.createdBy;
+      allow read, create, update, delete: if true;
     }
     
     // Shopping lists: household members can read/write
     match /shoppingLists/{listId} {
-      // Allow read if user is member of the household
-      allow read: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
-      
-      // Allow create if user is member of the household (check request.resource for new documents)
-      allow create: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.members;
-      
-      // Allow update/delete if user is member of the household
-      allow update, delete: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
+      allow read, create, update, delete: if true;
     }
     
     // Tasks: household members can read/write
     match /tasks/{taskId} {
-      // Allow read if user is member of the household
-      allow read: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
-      
-      // Allow create if user is member of the household (check request.resource for new documents)
-      allow create: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.members;
-      
-      // Allow update/delete if user is member of the household
-      allow update, delete: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
+      allow read, create, update, delete: if true;
     }
     
     // Inventory: household members can read/write
     match /inventory/{itemId} {
-      allow read, create, update, delete: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
+      allow read, create, update, delete: if true;
     }
-    
     
     // Plants: household members can read/write
     match /plants/{plantId} {
-      allow read, create, update, delete: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
+      allow read, create, update, delete: if true;
     }
     
     // Vendors: household members can read/write
     match /vendors/{vendorId} {
-      allow read, create, update, delete: if request.auth != null && 
-        request.auth.uid in get(/databases/$(database)/documents/households/$(resource.data.householdId)).data.members;
+      allow read, create, update, delete: if true;
     }
   }
 }

@@ -73,7 +73,6 @@ export interface Task {
   room: 'kitchen' | 'bathroom' | 'bedroom' | 'living' | 'other';
   frequency: 'daily' | 'weekly' | 'monthly' | 'one-time';
   estimatedMinutes: number;
-  assignedTo?: string; // user UID (optional - rotational)
   requiredProducts?: string[]; // InventoryItem IDs
   completed: boolean;
   completedBy?: string;

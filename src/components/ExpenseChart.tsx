@@ -10,8 +10,6 @@ import {
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -27,8 +25,6 @@ import { format, subMonths, startOfMonth, endOfMonth, subWeeks, startOfWeek, end
 
 interface ExpenseChartProps {
   expenses: Expense[];
-  householdMembers: string[];
-  currentUserId: string;
 }
 
 const categoryLabels: Record<ExpenseCategory, string> = {
@@ -52,8 +48,6 @@ const categoryColors: Record<ExpenseCategory, string> = {
 
 const ExpenseChart: React.FC<ExpenseChartProps> = ({
   expenses,
-  householdMembers,
-  currentUserId,
 }) => {
   const [tabValue, setTabValue] = React.useState(0);
 
@@ -125,24 +119,6 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
     }));
   }, [expenses]);
 
-  // Memoize user comparison data
-  const userData = useMemo(() => {
-    const userTotals: { [userId: string]: number } = {};
-    
-    expenses.forEach((expense) => {
-      const paidBy = expense.paidBy;
-      userTotals[paidBy] = (userTotals[paidBy] || 0) + expense.amount;
-    });
-    
-    return householdMembers.map((userId) => {
-      const isCurrentUser = userId === currentUserId;
-      const userName = isCurrentUser ? 'Tu' : 'Altro utente';
-      return {
-        name: userName,
-        amount: userTotals[userId] || 0,
-      };
-    });
-  }, [expenses, householdMembers, currentUserId]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -169,7 +145,6 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
           <Tab label="Weekly Trend" />
           <Tab label="Monthly Trend" />
           <Tab label="By Category" />
-          {householdMembers.length > 1 && <Tab label="User Comparison" />}
         </Tabs>
 
         {tabValue === 0 && (
@@ -283,36 +258,6 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="body2" sx={{ color: '#7A7A7A' }}>
                   No expenses by category
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        )}
-
-        {tabValue === 3 && householdMembers.length > 1 && (
-          <Box sx={{ width: '100%', height: 300 }}>
-            {userData.length > 0 ? (
-              <ResponsiveContainer>
-                  <BarChart data={userData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                    <XAxis dataKey="name" stroke="#7A7A7A" />
-                    <YAxis stroke="#7A7A7A" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #E0E0E0',
-                        borderRadius: 8,
-                      }}
-                      formatter={(value: any) => [`€${Number(value).toFixed(2)}`, 'Totale']}
-                    />
-                    <Legend />
-                    <Bar dataKey="amount" fill="#FFB86C" name="Spese totali" />
-                  </BarChart>
-                </ResponsiveContainer>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="body2" sx={{ color: '#7A7A7A' }}>
-                  Non ci sono dati per il confronto
                 </Typography>
               </Box>
             )}
